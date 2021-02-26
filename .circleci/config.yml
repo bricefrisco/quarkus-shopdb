@@ -10,7 +10,8 @@ workflows:
               only: test
 jobs:
   build_test:
-    machine: true
+    machine:
+      image: ubuntu-2004:202008-01
     resource_class: medium
     environment:
       MAVEN_OPTS: -Xmx6400m
@@ -21,12 +22,12 @@ jobs:
       - run:
           name: Login to DockerHub
           command: docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD
-      - run:
-          name: Install OpenJDK 11
-          command: |
-            sudo apt-get update && sudo apt-get install openjdk-11-jdk
-            sudo update-alternatives --set java /usr/lib/jvm/java-11-openjdk-amd64/bin/java
-            sudo update-alternatives --set javac /usr/lib/jvm/java-11-openjdk-amd64/bin/javac
+#      - run:
+#          name: Install OpenJDK 11
+#          command: |
+#            sudo apt-get update && sudo apt-get install openjdk-11-jdk
+#            sudo update-alternatives --set java /usr/lib/jvm/java-11-openjdk-amd64/bin/java
+#            sudo update-alternatives --set javac /usr/lib/jvm/java-11-openjdk-amd64/bin/javac
       - run:
           name: Export key
           command: echo $TEST_BASE64_KEY | base64 -d > key.pem
@@ -52,7 +53,7 @@ jobs:
           key: dependencies-{{ checksum "pom.xml" }}
       - run:
           name: Install GraalVM
-          command: curl https://github.com/oracle/graal/releases/download/vm-19.1.1/graalvm-ce-linux-amd64-19.1.1.tar.gz -O -J -L && tar xfz graalvm-ce-linux-amd64-19.1.1.tar.gz && mv graalvm-ce-19.1.1 .graalvm && rm graalvm-ce-linux-amd64-19.1.1.tar.gz
+          command: curl https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-21.0.0.2/graalvm-ce-java11-linux-amd64-21.0.0.2.tar.gz -O -J -L && tar xfz graalvm-ce-java11-linux-amd64-21.0.0.2.tar.gz && mv graalvm-ce-21.0.0.2 .graalvm && rm graalvm-ce-java11-linux-amd64-21.0.0.2.tar.gz
       - run:
           name: Install native-image
           command: $GRAALVM_HOME/bin/gu install native-image
