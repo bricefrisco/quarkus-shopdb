@@ -22,6 +22,13 @@ jobs:
           name: Login to DockerHub
           command: docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD
       - run:
+          name: Install OpenJDK 11
+          command: |
+            sudo apt-get update && sudo apt-get install openjdk-11-jdk
+            sudo update-alternatives --set java /usr/lib/jvm/java-11-openjdk-amd64/bin/java
+            sudo update-alternatives --set javac /usr/lib/jvm/java-11-openjdk-amd64/bin/javac
+            java -verison
+      - run:
           name: Export key
           command: echo $TEST_BASE64_KEY | base64 -d > key.pem
       - run:
@@ -34,9 +41,12 @@ jobs:
           keys:
             - dependencies-{{ checksum "pom.xml" }}
             - dependencies-
-#      - run:
-#          name: Download Dependencies
-#          command: ./mvnw dependency:go-offline
+      - run:
+          name: Mvnw permissions
+          command: chmod +x mvnw
+      - run:
+          name: Download Dependencies
+          command: ./mvnw dependency:go-offline
       - save_cache:
           paths:
             - ~/.m2
@@ -47,9 +57,6 @@ jobs:
       - run:
           name: Install native-image
           command: $GRAALVM_HOME/bin/gu install native-image
-      - run:
-          name: Mvnw permissions
-          command: chmod +x mvnw
       - run:
           name: Build (Native)
           command: ./mvnw clean package -Pnative
