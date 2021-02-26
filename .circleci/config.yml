@@ -22,12 +22,6 @@ jobs:
       - run:
           name: Login to DockerHub
           command: docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD
-#      - run:
-#          name: Install OpenJDK 11
-#          command: |
-#            sudo apt-get update && sudo apt-get install openjdk-11-jdk
-#            sudo update-alternatives --set java /usr/lib/jvm/java-11-openjdk-amd64/bin/java
-#            sudo update-alternatives --set javac /usr/lib/jvm/java-11-openjdk-amd64/bin/javac
       - run:
           name: Export key
           command: echo $TEST_BASE64_KEY | base64 -d > key.pem
@@ -36,7 +30,7 @@ jobs:
           command: echo $TEST_BASE64_CERT | base64 -d > cert.pem
       - run:
           name: Convert key to PKCS12
-          command: openssl pkcs12 -export -out src/main/resources/key.p12 -inkey key.pem -in cert.pem -passout pass:$TEST_PKCS12_PASS -name shopdb
+          command: openssl pkcs12 -export -out key.p12 -inkey key.pem -in cert.pem -passout pass:$TEST_PKCS12_PASS -name shopdb
       - restore_cache:
           keys:
             - dependencies-{{ checksum "pom.xml" }}
@@ -44,13 +38,6 @@ jobs:
       - run:
           name: Mvnw permissions
           command: chmod +x mvnw
-      - run:
-          name: Download Dependencies
-          command: ./mvnw dependency:go-offline
-      - save_cache:
-          paths:
-            - ~/.m2
-          key: dependencies-{{ checksum "pom.xml" }}
       - run:
           name: Install GraalVM
           command: curl https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-21.0.0.2/graalvm-ce-java11-linux-amd64-21.0.0.2.tar.gz -O -J -L && tar xfz graalvm-ce-java11-linux-amd64-21.0.0.2.tar.gz && mv graalvm-ce-java11-21.0.0.2 .graalvm && rm graalvm-ce-java11-linux-amd64-21.0.0.2.tar.gz
@@ -61,10 +48,10 @@ jobs:
           name: Build (Native)
           command: ./mvnw clean package -Pnative
           no_output_timeout: 30m
-      - run:
-          name: Verify (Native)
-          command: ./mvnw verify -Pnative
-          no_output_timeout: 30m
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: dependencies-{{ checksum "pom.xml" }}
       - run:
           name: Build docker image
           command: docker build -f src/main/docker/Dockerfile.native -t bricefrisco/quarkus-eccshopdb-backend-test:$CIRCLE_BUILD_NUM .
