@@ -21,9 +21,7 @@ RUN chown 1001 /work \
     && chown 1001:root /work
 COPY --chown=1001:root target/*-runner /work/application
 
-COPY key.p12 /work/certs/
-
 EXPOSE 8080
 USER 1001
 
-CMD ["./application", "-Dquarkus.http.host=0.0.0.0", "-Dquarkus.http.ssl.certificate.key-store-file=/work/certs/key.p12"]
+CMD ["./application", "-Dquarkus.http.host=0.0.0.0"]

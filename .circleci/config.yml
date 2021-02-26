@@ -30,7 +30,7 @@ jobs:
           command: echo $TEST_BASE64_CERT | base64 -d > cert.pem
       - run:
           name: Convert key to PKCS12
-          command: openssl pkcs12 -export -out key.p12 -inkey key.pem -in cert.pem -passout pass:$TEST_PKCS12_PASS -name shopdb
+          command: openssl pkcs12 -export -out src/main/resources/key.p12 -inkey key.pem -in cert.pem -passout pass:$TEST_PKCS12_PASS -name shopdb
       - restore_cache:
           keys:
             - dependencies-{{ checksum "pom.xml" }}
