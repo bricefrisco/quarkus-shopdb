@@ -35,9 +35,9 @@ jobs:
           keys:
             - dependencies-{{ checksum "pom.xml" }}
             - dependencies-
-      - run:
-          name: Mvnw permissions
-          command: chmod +x mvnw
+#      - run:
+#          name: Mvnw permissions
+#          command: chmod +x mvnw
       - run:
           name: Install GraalVM
           command: curl https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-21.0.0.2/graalvm-ce-java11-linux-amd64-21.0.0.2.tar.gz -O -J -L && tar xfz graalvm-ce-java11-linux-amd64-21.0.0.2.tar.gz && mv graalvm-ce-java11-21.0.0.2 .graalvm && rm graalvm-ce-java11-linux-amd64-21.0.0.2.tar.gz
@@ -46,7 +46,7 @@ jobs:
           command: $GRAALVM_HOME/bin/gu install native-image
       - run:
           name: Build (Native)
-          command: ./mvnw clean package -Pnative
+          command: mvn clean package -Pnative
           no_output_timeout: 30m
       - save_cache:
           paths:
