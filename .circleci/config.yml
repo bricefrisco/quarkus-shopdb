@@ -53,7 +53,7 @@ jobs:
           key: dependencies-{{ checksum "pom.xml" }}
       - run:
           name: Install GraalVM
-          command: curl https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-21.0.0.2/graalvm-ce-java11-linux-amd64-21.0.0.2.tar.gz -O -J -L && tar xfz graalvm-ce-java11-linux-amd64-21.0.0.2.tar.gz && mv graalvm-ce-21.0.0.2 .graalvm && rm graalvm-ce-java11-linux-amd64-21.0.0.2.tar.gz
+          command: curl https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-21.0.0.2/graalvm-ce-java11-linux-amd64-21.0.0.2.tar.gz -O -J -L && tar xfz graalvm-ce-java11-linux-amd64-21.0.0.2.tar.gz && mv graalvm-ce-java11-21.0.0.2 .graalvm && rm graalvm-ce-java11-linux-amd64-21.0.0.2.tar.gz
       - run:
           name: Install native-image
           command: $GRAALVM_HOME/bin/gu install native-image
