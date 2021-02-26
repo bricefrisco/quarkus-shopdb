@@ -27,7 +27,6 @@ jobs:
             sudo apt-get update && sudo apt-get install openjdk-11-jdk
             sudo update-alternatives --set java /usr/lib/jvm/java-11-openjdk-amd64/bin/java
             sudo update-alternatives --set javac /usr/lib/jvm/java-11-openjdk-amd64/bin/javac
-            java -verison
       - run:
           name: Export key
           command: echo $TEST_BASE64_KEY | base64 -d > key.pem
