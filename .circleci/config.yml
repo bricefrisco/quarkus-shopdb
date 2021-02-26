@@ -48,6 +48,9 @@ jobs:
           name: Install native-image
           command: $GRAALVM_HOME/bin/gu install native-image
       - run:
+          name: Mvnw permissions
+          command: chmod +x mvnw
+      - run:
           name: Build (Native)
           command: ./mvnw clean package -Pnative
           no_output_timeout: 30m
