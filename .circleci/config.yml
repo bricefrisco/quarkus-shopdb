@@ -34,9 +34,9 @@ jobs:
           keys:
             - dependencies-{{ checksum "pom.xml" }}
             - dependencies-
-      - run:
-          name: Download Dependencies
-          command: ./mvnw dependency:go-offline
+#      - run:
+#          name: Download Dependencies
+#          command: ./mvnw dependency:go-offline
       - save_cache:
           paths:
             - ~/.m2
