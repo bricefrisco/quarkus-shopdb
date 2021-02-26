@@ -14,7 +14,7 @@ jobs:
     resource_class: medium
     environment:
       MAVEN_OPTS: -Xmx6400m
-      GRAALVM_HOME: /home/circleci/repo/.graalvm
+      GRAALVM_HOME: /home/circleci/application/.graalvm
     working_directory: ~/application
     steps:
       - checkout
