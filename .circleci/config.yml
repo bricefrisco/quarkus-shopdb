@@ -36,7 +36,7 @@ jobs:
             - dependencies-
       - run:
           name: Download Dependencies
-          command: mvn dependency:go-offline
+          command: ./mvnw dependency:go-offline
       - save_cache:
           paths:
             - ~/.m2
