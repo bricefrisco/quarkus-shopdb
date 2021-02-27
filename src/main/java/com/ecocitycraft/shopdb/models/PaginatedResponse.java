@@ -5,13 +5,13 @@ import java.util.List;
 public class PaginatedResponse<T> {
     private int page;
     private long totalPages;
-    private long totalResults;
+    private long totalElements;
     private List<T> results;
 
-    public PaginatedResponse(int page, long totalPages, long totalResults, List<T> results) {
+    public PaginatedResponse(int page, long totalPages, long totalElements, List<T> results) {
         this.page = page;
         this.totalPages = totalPages;
-        this.totalResults = totalResults;
+        this.totalElements = totalElements;
         this.results = results;
     }
 
@@ -23,8 +23,8 @@ public class PaginatedResponse<T> {
         return totalPages;
     }
 
-    public long getTotalResults() {
-        return totalResults;
+    public long getTotalElements() {
+        return totalElements;
     }
 
     public List<T> getResults() {
@@ -39,8 +39,8 @@ public class PaginatedResponse<T> {
         this.totalPages = totalPages;
     }
 
-    public void setTotalResults(long totalResults) {
-        this.totalResults = totalResults;
+    public void setTotalElements(long totalResults) {
+        this.totalElements = totalResults;
     }
 
     public void setResults(List<T> results) {

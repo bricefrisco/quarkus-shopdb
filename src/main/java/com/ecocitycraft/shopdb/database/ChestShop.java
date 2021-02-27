@@ -51,7 +51,21 @@ public class ChestShop extends PanacheEntityBase {
     @Column(name="is_sell_sign")
     public Boolean isSellSign;
 
-    public static List<ChestShop> findByLocation(Server server, int lx, int ux, int ly, int uy, int lz, int uz) {
+    public static List<ChestShop> findInRegion(Region region) {
+        return findInLocation(region.server, region.iBounds, region.oBounds);
+    }
+
+    public static List<ChestShop> findInLocation(Server server, Location iBounds, Location oBounds) {
+        int lx = iBounds.getX();
+        int ly = iBounds.getY();
+        int lz = iBounds.getZ();
+        int ux = oBounds.getX();
+        int uy = oBounds.getY();
+        int uz = oBounds.getZ();
+        return findInLocation(server, lx, ux, ly, uy, lz, uz);
+    }
+
+    public static List<ChestShop> findInLocation(Server server, int lx, int ux, int ly, int uy, int lz, int uz) {
         return ChestShop.find(
                 "server = ?1 AND " +
                         "?2 <= x AND ?3 >= x AND " +

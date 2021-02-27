@@ -55,7 +55,27 @@ public class Region extends PanacheEntityBase {
         return Region.find("server = ?1 AND name = ?2", server, name).firstResult();
     }
 
-    public static List<Region> findByCoordinates(int x, int y, int z, Server server) {
+
+
+    public static boolean hasConflictingRegion(Location iBounds, Location oBounds, Server server) {
+        // Check if any region overlaps with the inner and outer bounds
+        List<Region> conflictingRegions = findByLocations(iBounds, oBounds, server);
+        if (conflictingRegions != null && conflictingRegions.size() > 0) {
+            return true;
+        }
+
+        // Check if this region is inside of another region
+        conflictingRegions = Region.findInCoordinates(iBounds, oBounds, server);
+        return conflictingRegions != null && conflictingRegions.size() > 0;
+    }
+
+    public static  List<Region> findByLocations(Location iBounds, Location oBounds, Server server) {
+        List<Region> regions = findOverlapping(iBounds.getX(), iBounds.getY(), iBounds.getZ(), server);
+        if (regions != null && regions.size() > 0) return regions;
+        return findOverlapping(oBounds.getX(), oBounds.getY(), oBounds.getZ(), server);
+    }
+
+    public static List<Region> findOverlapping(int x, int y, int z, Server server) {
         return Region.find(
                 "server = ?1 AND " +
                         "i_x <= ?2 AND o_x >= ?2 AND " +
@@ -63,6 +83,10 @@ public class Region extends PanacheEntityBase {
                         "i_z <= ?4 AND o_z >= ?4",
                 server, x, y, z
         ).list();
+    }
+
+    public static List<Region> findInCoordinates(Location iBounds, Location oBounds, Server server) {
+        return findInCoordinates(iBounds.getX(), oBounds.getX(), iBounds.getZ(), oBounds.getZ(), server);
     }
 
     public static List<Region> findInCoordinates(int ix, int ox, int iz, int oz, Server server) {

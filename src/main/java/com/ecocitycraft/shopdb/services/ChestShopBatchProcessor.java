@@ -67,6 +67,22 @@ public class ChestShopBatchProcessor {
         return response;
     }
 
+    public void showChestShops(Region region) {
+        List<ChestShop> shops = ChestShop.findInRegion(region);
+        for (ChestShop shop : shops) {
+            shop.isHidden = Boolean.FALSE;
+        }
+        ChestShop.persist(shops);
+    }
+
+    public void hideChestShops(Region region) {
+        List<ChestShop> shops = ChestShop.findInRegion(region);
+        for (ChestShop shop : shops) {
+            shop.isHidden = Boolean.TRUE;
+        }
+        ChestShop.persist(shops);
+    }
+
     private boolean eventIsValid(ShopEvent event) {
         if (event.getId() == null || event.getId().isEmpty()) {
             LOGGER.info("Skipping event " + event.toString() + " - ID is null or empty.");
@@ -174,7 +190,7 @@ public class ChestShopBatchProcessor {
         }
 
         if (sign.town == null) {
-            List<Region> regions = Region.findByCoordinates(event.getX(), event.getY(), event.getZ(), sign.server);
+            List<Region> regions = Region.findOverlapping(event.getX(), event.getY(), event.getZ(), sign.server);
             if (regions != null && regions.size() > 0) {
                 sign.town = regions.get(0); // TODO: Determine correct region or add many to many
             }

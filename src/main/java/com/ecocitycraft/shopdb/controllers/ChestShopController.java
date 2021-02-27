@@ -45,6 +45,7 @@ public class ChestShopController {
             @QueryParam("sortBy") SortBy sortBy,
             @QueryParam("distinct") Boolean distinct)
     {
+        LOGGER.info("GET /chest-shops");
         if (page == null) page = 1;
         if (page < 1) throw new BadRequestException(ExceptionMessage.INVALID_PAGE);
         if (pageSize == null) pageSize = 6;
@@ -59,12 +60,13 @@ public class ChestShopController {
 
         if (sortBy == SortBy.BEST_PRICE) {
             if (tradeType == TradeType.BUY) {
-                sort = Sort.by("buy_price_each").ascending();
+                sort = Sort.by("buyPriceEach").ascending();
             } else {
-                sort = Sort.by("sell_price_each").descending();
+                sort = Sort.by("sellPriceEach").descending();
             }
         } else if (sortBy == SortBy.QUANTITY_AVAILABLE) {
-            sort = Sort.by("quantity_available");
+            LOGGER.info("Sorting by quantity available");
+            sort = Sort.by("quantityAvailable").descending();
         } else if (sortBy == SortBy.QUANTITY) {
             sort = Sort.by("quantity").descending();
         } else {
@@ -78,7 +80,7 @@ public class ChestShopController {
                         "(?3 = '' OR server = ?3) AND " +
                         "(?4 IS FALSE OR is_full = false) AND " +
                         "(?5 IS FALSE OR quantity_available > 0) AND " +
-                        "is_hidden = false",
+                        "isHidden = false",
                 sort,
                 material,
                 tradeType == TradeType.BUY,
@@ -90,7 +92,7 @@ public class ChestShopController {
         if (!distinct) {
             long totalResults = chestShops.count();
             List<ChestShopDto> results = chestShops.page(page - 1, pageSize).stream().map(ChestShopMapper.INSTANCE::toChestShopDto).collect(Collectors.toList());
-            return new PaginatedResponse<>(page, 0, totalResults, shuffle(results, tradeType));
+            return new PaginatedResponse<>(page, Pagination.getNumPages(pageSize, totalResults), totalResults, shuffle(results, tradeType, sortBy));
         }
 
         LinkedHashMap<ChestShop, ChestShop> distinctValues = new LinkedHashMap<>();
@@ -108,12 +110,13 @@ public class ChestShopController {
 
         long totalResults = distinctValues.keySet().size();
         List<ChestShopDto> results = Pagination.getPage(new LinkedList<>(distinctValues.keySet()), page, pageSize).stream().map(ChestShopMapper.INSTANCE::toChestShopDto).collect(Collectors.toList());
-        return new PaginatedResponse<>(page, 0, totalResults, results);
+        return new PaginatedResponse<>(page, Pagination.getNumPages(pageSize, totalResults), totalResults, shuffle(results, tradeType, sortBy));
     }
 
     @GET
     @Path("material-names")
     public List<PanacheEntityBase> getChestShopSignMaterialNames(@QueryParam("server") Server server, @QueryParam("tradeType") TradeType tradeType) {
+        LOGGER.info("GET /chest-shops/material-names");
         if (tradeType == null) tradeType = TradeType.BUY;
         return ChestShop.find("SELECT DISTINCT material FROM ChestShop " +
                         "WHERE (?1 = '' OR server = ?1) AND " +
@@ -131,7 +134,8 @@ public class ChestShopController {
         return chestShopBatchProcessor.createChestShopSigns(shopEvents);
     }
 
-    private List<ChestShopDto> shuffle(List<ChestShopDto> dtos, TradeType tradeType) {
+    private List<ChestShopDto> shuffle(List<ChestShopDto> dtos, TradeType tradeType, SortBy sortBy) {
+        if (sortBy != SortBy.BEST_PRICE) return dtos;
         List<ChestShopDto> results = new ArrayList<>();
 
         HashMap<Double, List<ChestShopDto>> priceMap = new HashMap<>();

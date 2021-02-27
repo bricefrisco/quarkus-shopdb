@@ -17,4 +17,9 @@ public final class Pagination {
         // toIndex exclusive
         return sourceList.subList(fromIndex, Math.min(fromIndex + pageSize, sourceList.size()));
     }
+
+    public static Integer getNumPages(int pageSize, long totalResults) {
+        if (pageSize == 0 || totalResults == 0) return 0;
+        return (int) Math.ceil(totalResults / (double) pageSize);
+    }
 }

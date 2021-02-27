@@ -52,7 +52,7 @@ public class RegionBatchProcessor {
             Region region = Region.find(server, request.getName());
 
             if (region == null) {
-                if (hasConflictingRegion(request.getName(), bounds.getLowerBounds(), bounds.getUpperBounds(), server)) {
+                if (Region.hasConflictingRegion(bounds.getLowerBounds(), bounds.getUpperBounds(), server)) {
                     invalidRegions.add(String.format(INVALID_REGION_FORMAT, request.getName(), Server.toString(server)));
                     continue;
                 }
@@ -178,51 +178,11 @@ public class RegionBatchProcessor {
         return new Bounds(lowerBounds, upperBounds);
     }
 
-    private boolean hasConflictingRegion(String name, Location iBounds, Location oBounds, Server server) {
-        List<Region> conflictingRegions = findByLocations(iBounds, oBounds, server);
-        if (conflictingRegions != null && conflictingRegions.size() > 0) {
-            LOGGER.warn("Region " + name + " conflicts with " + conflictingRegions.toString() + " on " + server.name() + " - these coordinates overlap");
-            return true;
-        }
-
-        conflictingRegions = findInCoordinates(iBounds, oBounds, server);
-        if (conflictingRegions != null && conflictingRegions.size() > 0) {
-            LOGGER.warn("Region " + name + " conflicts with " + conflictingRegions.toString() + " on " + server.name() + " - these coordinates overlap");
-            return true;
-        }
-
-        return false;
-    }
-
     private void linkChestShops(Region region) {
-        List<ChestShop> shops = findByRegion(region);
+        List<ChestShop> shops = ChestShop.findInRegion(region);
         for (ChestShop shop : shops) {
             shop.town = region;
         }
         ChestShop.persist(shops);
-    }
-
-    private List<Region> findByLocations(Location iBounds, Location oBounds, Server server) {
-        List<Region> regions = Region.findByCoordinates(iBounds.getX(), iBounds.getY(), iBounds.getZ(), server);
-        if (regions != null && regions.size() > 0) return regions;
-        return Region.findByCoordinates(oBounds.getX(), oBounds.getY(), oBounds.getZ(), server);
-    }
-
-    private List<Region> findInCoordinates(Location iBounds, Location oBounds, Server server) {
-        return Region.findInCoordinates(iBounds.getX(), oBounds.getX(), iBounds.getZ(), oBounds.getZ(), server);
-    }
-
-    private List<ChestShop> findByRegion(Region region) {
-        return findChestShopsByLocation(region.server, region.iBounds, region.oBounds);
-    }
-
-    private List<ChestShop> findChestShopsByLocation(Server server, Location iBounds, Location oBounds) {
-        int lx = iBounds.getX();
-        int ly = iBounds.getY();
-        int lz = iBounds.getZ();
-        int ux = oBounds.getX();
-        int uy = oBounds.getY();
-        int uz = oBounds.getZ();
-        return ChestShop.findByLocation(server, lx, ux, ly, uy, lz, uz);
     }
 }
