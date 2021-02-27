@@ -99,7 +99,6 @@ public class ChestShopBatchProcessor {
             return false;
         }
 
-        if (event.getWorld().equals("world")) event.setWorld("rising");
         if (!event.getWorld().equals("rising") && !event.getWorld().equals("rising_n") && !event.getWorld().equals("rising_e")) {
             LOGGER.info("Skipping event " + event.toString() + " - server cannot be determined.");
             return false;

@@ -4,11 +4,64 @@ workflows:
   version: 2
   main:
     jobs:
-      - build_test:
+#      - build_test:
+#          filters:
+#            branches:
+#              only: test
+      - build:
           filters:
             branches:
-              only: test
+              only: master
 jobs:
+  build:
+    machine:
+      image: ubuntu-2004:202008-01
+    resource_class: medium
+    environment:
+      MAVEN_OPTS: -Xmx6400m
+      GRAALVM_HOME: /home/circleci/application/.graalvm
+    working_directory: ~/application
+    steps:
+      - checkout
+      - run:
+          name: Login to DockerHub
+          command: docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD
+      - run:
+          name: Export key
+          command: echo $BASE64_KEY | base64 -d > key.pem
+      - run:
+          name: Export cert
+          command: echo $BASE64_CERT | base64 -d > cert.pem
+      - run:
+          name: Convert key to PKCS12
+          command: openssl pkcs12 -export -out src/main/resources/key.p12 -inkey key.pem -in cert.pem -passout pass:$PKCS12_PASS -name shopdb
+      - restore_cache:
+          keys:
+            - dependencies-{{ checksum "pom.xml" }}
+            - dependencies-
+      - run:
+          name: Install GraalVM
+          command: curl https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-21.0.0.2/graalvm-ce-java11-linux-amd64-21.0.0.2.tar.gz -O -J -L && tar xfz graalvm-ce-java11-linux-amd64-21.0.0.2.tar.gz && mv graalvm-ce-java11-21.0.0.2 .graalvm && rm graalvm-ce-java11-linux-amd64-21.0.0.2.tar.gz
+      - run:
+          name: Install native-image
+          command: $GRAALVM_HOME/bin/gu install native-image
+      - run:
+          name: Build (Native)
+          command: mvn clean package -Pnative
+          no_output_timeout: 30m
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: dependencies-{{ checksum "pom.xml" }}
+      - run:
+          name: Build docker image
+          command: docker build -f src/main/docker/Dockerfile.native -t bricefrisco/quarkus-eccshopdb-backend:$CIRCLE_BUILD_NUM .
+      - run:
+          name: Push docker image
+          command: docker push bricefrisco/quarkus-eccshopdb-backend:$CIRCLE_BUILD_NUM
+      - run:
+          name: Notify server to update Docker image
+          command: ssh -o StrictHostKeyChecking=no $HOST "/usr/local/sbin/upgrade-docker-image.sh" bricefrisco/quarkus-eccshopdb-backend $CIRCLE_BUILD_NUM $DOCKER_ENV_ARGS
   build_test:
     machine:
       image: ubuntu-2004:202008-01

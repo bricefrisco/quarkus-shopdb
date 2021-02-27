@@ -31,7 +31,6 @@ public class RegionBatchProcessor {
         this.servers.put("rising", Server.MAIN);
         this.servers.put("rising_n", Server.MAIN_NORTH);
         this.servers.put("rising_e", Server.MAIN_EAST);
-        this.servers.put("world", Server.MAIN);
     }
 
     public String processRegions(List<RegionRequest> requests) {
