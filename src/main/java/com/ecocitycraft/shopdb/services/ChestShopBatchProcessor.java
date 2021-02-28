@@ -192,25 +192,28 @@ public class ChestShopBatchProcessor {
         if (sign.town == null) {
             List<Region> regions = Region.findOverlapping(event.getX(), event.getY(), event.getZ(), sign.server);
             if (regions != null && regions.size() > 0) {
-                LOGGER.warn("Conflicting regions for event: " + event.toString());
+                if (regions.size() > 1) {
+                    LOGGER.warn("Conflicting regions for event: " + event.toString());
 
-                Region selectedRegion = null;
-                StringBuilder sb = new StringBuilder();
-                for (Region region : regions) {
-                    sb.append(region.name).append(",");
-                    if (region.active) {
-                        selectedRegion = region;
+                    Region selectedRegion = null;
+                    StringBuilder sb = new StringBuilder();
+                    for (Region region : regions) {
+                        sb.append(region.name).append(",");
+                        if (region.active) {
+                            selectedRegion = region;
+                        }
                     }
-                }
 
-                LOGGER.warn("Regions are (server: " + sign.server + "): " + sb.toString());
+                    LOGGER.warn("Regions are (server: " + sign.server + "): " + sb.toString());
 
-                if (selectedRegion != null) {
-                    LOGGER.warn("Selected region is (server: " + sign.server + "): " + selectedRegion.name);
-                    sign.town = selectedRegion;
+                    if (selectedRegion != null) {
+                        LOGGER.warn("Selected region is (server: " + sign.server + "): " + selectedRegion.name);
+                        sign.town = selectedRegion;
+                    } else {
+                        sign.town = regions.get(0);
+                    }
                 } else {
-                    LOGGER.warn("Selected region is (server: " + sign.server + "): " + regions.get(0).name);
-                    sign.town = regions.get(0); // TODO: Determine correct region or add many to many
+                    sign.town = regions.get(0);
                 }
             }
         }

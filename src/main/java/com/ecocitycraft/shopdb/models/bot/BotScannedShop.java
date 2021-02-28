@@ -9,6 +9,7 @@ public class BotScannedShop {
     private String quantityLine;
     private String priceLine;
     private String materialLine;
+    private String regionName;
 
     public String getId() {
         return id;
@@ -34,6 +35,10 @@ public class BotScannedShop {
         return materialLine;
     }
 
+    public String getRegionName() {
+        return regionName;
+    }
+
     public void setId(String id) {
         this.id = id;
     }
@@ -56,5 +61,9 @@ public class BotScannedShop {
 
     public void setMaterialLine(String materialLine) {
         this.materialLine = materialLine;
+    }
+
+    public void setRegionName(String regionName) {
+        this.regionName = regionName;
     }
 }
