@@ -102,6 +102,8 @@ public class RegionBatchProcessor {
             return false;
         }
 
+        String name = regionRequest.getName().toLowerCase(Locale.ROOT);
+
         if (regionRequest.getServer() == null) {
             LOGGER.warn("Filtering out region request with null server: " + regionRequest);
             return false;
@@ -113,32 +115,32 @@ public class RegionBatchProcessor {
             return false;
         }
 
-        if (invalidRegions.contains(String.format(INVALID_REGION_FORMAT, regionRequest.getName(), Server.toString(server)))) {
+        if (invalidRegions.contains(String.format(INVALID_REGION_FORMAT, name, Server.toString(server)))) {
             return false;
         }
 
         if (regionRequest.getiBounds() == null) {
             LOGGER.warn("Filtering out region request with invalid iBounds: " + regionRequest);
-            invalidRegions.add(String.format(INVALID_REGION_FORMAT, regionRequest.getName(), Server.toString(server)));
+            invalidRegions.add(String.format(INVALID_REGION_FORMAT, name, Server.toString(server)));
             return false;
         }
 
         if (regionRequest.getoBounds() == null) {
             LOGGER.warn("Filtering out region request with invalid oBounds: " + regionRequest);
-            invalidRegions.add(String.format(INVALID_REGION_FORMAT, regionRequest.getName(), Server.toString(server)));
+            invalidRegions.add(String.format(INVALID_REGION_FORMAT, name, Server.toString(server)));
             return false;
         }
 
         if (regionRequest.getMayorNames() == null) {
             LOGGER.warn("Filtering out region request with null mayors: " + regionRequest);
-            invalidRegions.add(String.format(INVALID_REGION_FORMAT, regionRequest.getName(), Server.toString(server)));
+            invalidRegions.add(String.format(INVALID_REGION_FORMAT, name, Server.toString(server)));
             return false;
         }
 
-        for (String name : regionRequest.getMayorNames()) {
-            if (!p.matcher(name).matches()) {
+        for (String mayorName : regionRequest.getMayorNames()) {
+            if (!p.matcher(mayorName).matches()) {
                 LOGGER.warn("Filtering out region request with invalid mayor(s): " + regionRequest);
-                invalidRegions.add(String.format(INVALID_REGION_FORMAT, regionRequest.getName(), Server.toString(server)));
+                invalidRegions.add(String.format(INVALID_REGION_FORMAT, name, Server.toString(server)));
                 return false;
             }
         }

@@ -24,10 +24,10 @@ public class ChestShop extends PanacheEntityBase {
     @Column(nullable = false)
     public String material;
 
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     public Player owner;
 
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     public Region town;
 
     public Integer quantity;
