@@ -29,8 +29,6 @@ public class BotShopProcessor {
 
     public String processShopSigns(BotShopRequest request) {
         Server server = request.getServer();
-        String regionName = request.getRegionName().toLowerCase(Locale.ROOT);
-        Region r = Region.find(request.getServer(), regionName);
         List<BotScannedShop> shops = request.getSigns();
 
 
@@ -73,7 +71,34 @@ public class BotShopProcessor {
 
             c.id = shop.getId();
             c.owner = pl;
-            c.town = r;
+
+            List<Region> regions = Region.findOverlapping(shop.getLocation().getX(), shop.getLocation().getY(), shop.getLocation().getZ(), server);
+            if (regions != null && regions.size() > 0) {
+                if (regions.size() > 1) {
+                    LOGGER.warn("Conflicting regions.");
+
+                    Region selectedRegion = null;
+                    StringBuilder sb = new StringBuilder();
+                    for (Region region : regions) {
+                        sb.append(region.name).append(",");
+                        if (region.active) {
+                            selectedRegion = region;
+                        }
+                    }
+
+                    LOGGER.warn("Regions are (server: " + server + "): " + sb.toString());
+
+                    if (selectedRegion != null) {
+                        LOGGER.warn("Selected region is (server: " + server + "): " + selectedRegion.name);
+                        c.town = selectedRegion;
+                    } else {
+                        c.town = regions.get(0);
+                    }
+                } else {
+                    c.town = regions.get(0);
+                }
+            }
+
             c.server = server;
             c.location = shop.getLocation();
 
