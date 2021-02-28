@@ -91,7 +91,6 @@ public class ChestShop extends PanacheEntityBase {
     }
 
     public static PanacheQuery<ChestShop> findInRegion(Region r, TradeType tradeType) {
-        System.out.println("Region: " + r.getName());
         return ChestShop.find("town = ?1 AND isHidden = false AND " +
                         "(?2 IS FALSE or is_buy_sign = true) AND " +
                         "(?2 IS TRUE or is_sell_sign = true)",
