@@ -10,7 +10,9 @@ import org.mapstruct.factory.Mappers;
 @Mapper
 public interface PlayerMapper {
     PlayerMapper INSTANCE = Mappers.getMapper(PlayerMapper.class);
+
     PlayerRegionDto toPlayerRegionDto(Region region);
+
     PlayerDto toPlayerDto(Player player);
 
     @AfterMapping

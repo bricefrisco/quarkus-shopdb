@@ -1,21 +1,20 @@
 package com.ecocitycraft.shopdb.models.chestshops;
 
-import com.ecocitycraft.shopdb.utils.ExceptionMessage;
-
-import javax.ws.rs.BadRequestException;
+import com.ecocitycraft.shopdb.exceptions.SDBIllegalArgumentException;
+import com.ecocitycraft.shopdb.exceptions.ExceptionMessage;
 
 public enum TradeType {
     BUY,
     SELL;
 
     public static TradeType fromString(String s) {
-        switch(s) {
+        switch (s) {
             case "buy":
                 return BUY;
             case "sell":
                 return SELL;
             default:
-                throw new BadRequestException(ExceptionMessage.INVALID_TRADE_TYPE);
+                throw new SDBIllegalArgumentException(ExceptionMessage.INVALID_TRADE_TYPE);
         }
     }
 }

@@ -1,8 +1,7 @@
 package com.ecocitycraft.shopdb.models.chestshops;
 
-import com.ecocitycraft.shopdb.utils.ExceptionMessage;
-
-import javax.ws.rs.BadRequestException;
+import com.ecocitycraft.shopdb.exceptions.SDBIllegalArgumentException;
+import com.ecocitycraft.shopdb.exceptions.ExceptionMessage;
 
 public enum SortBy {
     BEST_PRICE,
@@ -21,7 +20,7 @@ public enum SortBy {
             case "quantity-available":
                 return QUANTITY_AVAILABLE;
             default:
-                throw new BadRequestException(ExceptionMessage.INVALID_SORT_BY);
+                throw new SDBIllegalArgumentException(ExceptionMessage.INVALID_SORT_BY);
         }
     }
 }

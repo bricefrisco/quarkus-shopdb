@@ -67,17 +67,19 @@ public class ChestShopBatchProcessor {
         return response;
     }
 
-    public void showChestShops(Region region) {
+    public void linkAndShowChestShops(Region region) {
         List<ChestShop> shops = ChestShop.findInRegion(region);
         for (ChestShop shop : shops) {
+            shop.town = region;
             shop.isHidden = Boolean.FALSE;
         }
         ChestShop.persist(shops);
     }
 
-    public void hideChestShops(Region region) {
+    public void linkAndHideChestShops(Region region) {
         List<ChestShop> shops = ChestShop.findInRegion(region);
         for (ChestShop shop : shops) {
+            shop.town = region;
             shop.isHidden = Boolean.TRUE;
         }
         ChestShop.persist(shops);
@@ -164,7 +166,7 @@ public class ChestShopBatchProcessor {
     }
 
     private ChestShop convert(ChestShop sign, ShopEvent event, HashMap<String, Player> players) {
-        sign.owner = players.get(event.getOwner());
+        sign.owner = players.get(event.getOwner().toLowerCase(Locale.ROOT));
         sign.quantity = event.getQuantity();
         sign.quantityAvailable = event.getCount();
 
@@ -189,7 +191,7 @@ public class ChestShopBatchProcessor {
         }
 
         if (sign.town == null) {
-            List<Region> regions = Region.findOverlapping(event.getX(), event.getY(), event.getZ(), sign.server);
+            List<Region> regions = Region.findByCoordinates(event.getX(), event.getY(), event.getZ(), sign.server);
             if (regions != null && regions.size() > 0) {
                 if (regions.size() > 1) {
                     LOGGER.warn("Conflicting regions for event: " + event.toString());

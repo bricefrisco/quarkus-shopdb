@@ -1,7 +1,8 @@
 package com.ecocitycraft.shopdb.database;
 
-import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
+import io.quarkus.hibernate.orm.panache.PanacheQuery;
+import io.quarkus.panache.common.Sort;
 
 import javax.persistence.*;
 import javax.validation.constraints.Size;
@@ -19,19 +20,27 @@ public class Player extends PanacheEntityBase {
     @Size(min = 3, max = 16)
     public String name;
 
-    @Column(name="last_seen")
+    @Column(name = "last_seen")
     public Timestamp lastSeen;
-    @Column(name="last_updated")
+    @Column(name = "last_updated")
     public Timestamp lastUpdated;
 
     @OneToMany(mappedBy = "owner")
     public List<ChestShop> chestShops;
 
     @ManyToMany
-    @JoinTable(name = "region_mayors", joinColumns = @JoinColumn(name="mayors_id"), inverseJoinColumns = @JoinColumn(name="towns_id"))
+    @JoinTable(name = "region_mayors", joinColumns = @JoinColumn(name = "mayors_id"), inverseJoinColumns = @JoinColumn(name = "towns_id"))
     public List<Region> towns;
 
     public Boolean active;
+
+    public static PanacheQuery<Player> find(String name) {
+        name = name.toLowerCase(Locale.ROOT);
+        return Player.find("(?1 = '' OR name = ?1)",
+                Sort.by("name"),
+                name
+        );
+    }
 
     public static Player findByName(String name) {
         if (name == null) return null;
@@ -55,6 +64,10 @@ public class Player extends PanacheEntityBase {
         }
 
         return players;
+    }
+
+    public static List<PanacheEntityBase> findPlayerNames() {
+        return Player.find("SELECT name FROM Player WHERE (?1 = true) ORDER BY name", true).list();
     }
 
     public String getName() {

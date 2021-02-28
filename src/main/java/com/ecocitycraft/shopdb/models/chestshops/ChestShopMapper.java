@@ -11,6 +11,8 @@ public interface ChestShopMapper {
     ChestShopMapper INSTANCE = Mappers.getMapper(ChestShopMapper.class);
 
     ChestShopRegionDto toChestShopRegionDto(Region region);
+
     ChestShopPlayerDto toChestShopPlayerDto(Player player);
+
     ChestShopDto toChestShopDto(ChestShop chestShop);
 }

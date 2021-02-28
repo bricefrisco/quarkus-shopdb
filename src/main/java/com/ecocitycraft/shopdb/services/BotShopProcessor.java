@@ -72,7 +72,7 @@ public class BotShopProcessor {
             c.id = shop.getId();
             c.owner = pl;
 
-            List<Region> regions = Region.findOverlapping(shop.getLocation().getX(), shop.getLocation().getY(), shop.getLocation().getZ(), server);
+            List<Region> regions = Region.findByCoordinates(shop.getLocation().getX(), shop.getLocation().getY(), shop.getLocation().getZ(), server);
             if (regions != null && regions.size() > 0) {
                 if (regions.size() > 1) {
                     LOGGER.warn("Conflicting regions.");
@@ -188,40 +188,5 @@ public class BotShopProcessor {
         }
 
         return null;
-    }
-
-    public static String generateID(Location location, Server server) {
-        String s = null;
-        System.out.println("Server: " + server);
-        if (server == Server.MAIN) s = "rising";
-        if (server == Server.MAIN_EAST) s = "rising_n";
-        if (server == Server.MAIN_NORTH) s = "rising_e";
-
-        if (s == null) return null;
-        return generateID(location.getX(), location.getY(), location.getZ(), s);
-    }
-
-    public static String generateID(int x, int y, int z, String s) {
-        x = con(x);
-        y = con(y);
-        z = con(z);
-        System.out.println("X: " + x);
-        System.out.println("Y: " + y);
-        System.out.println("Z: " + z);
-        String location = String.format(LOCATION, x, y, z, s);
-        return UUID.nameUUIDFromBytes(location.getBytes()).toString();
-    }
-
-    public static int con(int num) {
-        return locToBlock(num);
-    }
-
-    public static int locToBlock(double loc) {
-        return floor(loc);
-    }
-
-    public static int floor(double num) {
-        int floor = (int)num;
-        return (double)floor == num ? floor : floor - (int)(Double.doubleToRawLongBits(num) >>> 63);
     }
 }
