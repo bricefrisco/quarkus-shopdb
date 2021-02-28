@@ -1,9 +1,8 @@
 package com.ecocitycraft.shopdb.models.chestshops;
 
-import com.ecocitycraft.shopdb.utils.ExceptionMessage;
+import com.ecocitycraft.shopdb.exceptions.SDBIllegalArgumentException;
+import com.ecocitycraft.shopdb.exceptions.ExceptionMessage;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import javax.ws.rs.BadRequestException;
 
 public enum Server {
     @JsonProperty("main")
@@ -14,7 +13,7 @@ public enum Server {
     MAIN_EAST;
 
     public static Server fromString(String s) {
-        switch(s) {
+        switch (s) {
             case "main":
                 return MAIN;
             case "main-north":
@@ -22,13 +21,13 @@ public enum Server {
             case "main-east":
                 return MAIN_EAST;
             default:
-                throw new BadRequestException(ExceptionMessage.INVALID_SERVER);
+                throw new SDBIllegalArgumentException(ExceptionMessage.INVALID_SERVER);
         }
     }
 
     public static String toString(Server server) {
         if (server == null) return "";
-        switch(server) {
+        switch (server) {
             case MAIN:
                 return "MAIN";
             case MAIN_NORTH:
@@ -36,7 +35,7 @@ public enum Server {
             case MAIN_EAST:
                 return "MAIN_EAST";
             default:
-                throw new BadRequestException(ExceptionMessage.INVALID_SERVER);
+                throw new SDBIllegalArgumentException(ExceptionMessage.INVALID_SERVER);
         }
     }
 }

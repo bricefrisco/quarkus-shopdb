@@ -51,16 +51,10 @@ public class RegionBatchProcessor {
             Region region = Region.find(server, request.getName());
 
             if (region == null) {
-                if (Region.hasConflictingRegion(bounds.getLowerBounds(), bounds.getUpperBounds(), server)) {
-                    invalidRegions.add(String.format(INVALID_REGION_FORMAT, request.getName(), Server.toString(server)));
-                    continue;
-                }
-
                 region = new Region();
                 region.active = Boolean.FALSE;
                 region.name = request.getName().toLowerCase(Locale.ROOT);
                 region.server = server;
-
                 inserts.add(region);
             } else {
                 updates.add(region);
@@ -80,10 +74,6 @@ public class RegionBatchProcessor {
             region.lastUpdated = new Timestamp(System.currentTimeMillis());
 
             Region.persist(region);
-        }
-
-        for (Region region : inserts) {
-            linkChestShops(region);
         }
 
         String response = "Successfully updated " + updates.size() + " regions, and inserted " + inserts.size() + " regions.";
@@ -177,13 +167,5 @@ public class RegionBatchProcessor {
         }
 
         return new Bounds(lowerBounds, upperBounds);
-    }
-
-    private void linkChestShops(Region region) {
-        List<ChestShop> shops = ChestShop.findInRegion(region);
-        for (ChestShop shop : shops) {
-            shop.town = region;
-        }
-        ChestShop.persist(shops);
     }
 }

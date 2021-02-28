@@ -1,12 +1,14 @@
 package com.ecocitycraft.shopdb.utils;
 
+import com.ecocitycraft.shopdb.exceptions.SDBIllegalArgumentException;
+
 import java.util.Collections;
 import java.util.List;
 
 public final class Pagination {
     public static <T> List<T> getPage(List<T> sourceList, int page, int pageSize) {
         if (pageSize <= 0 || page <= 0) {
-            throw new IllegalArgumentException("invalid page size: " + pageSize);
+            throw new SDBIllegalArgumentException("invalid page size: " + pageSize);
         }
 
         int fromIndex = (page - 1) * pageSize;

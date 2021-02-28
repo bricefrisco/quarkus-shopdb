@@ -1,5 +1,7 @@
 package com.ecocitycraft.shopdb.controllers;
 
+import com.ecocitycraft.shopdb.exceptions.ExceptionMessage;
+import com.ecocitycraft.shopdb.exceptions.SDBIllegalArgumentException;
 import com.ecocitycraft.shopdb.services.BotShopProcessor;
 import com.ecocitycraft.shopdb.models.bot.BotShopRequest;
 import com.ecocitycraft.shopdb.database.ChestShop;
@@ -14,6 +16,7 @@ import org.jboss.resteasy.annotations.GZIP;
 import org.jboss.resteasy.annotations.jaxrs.QueryParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 import javax.ws.rs.*;
@@ -39,94 +42,46 @@ public class ChestShopController {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public PaginatedResponse<ChestShopDto> getChestShopSigns(
-            @QueryParam("page") Integer page,
-            @QueryParam("pageSize") Integer pageSize,
-            @QueryParam("material") String material,
+            @DefaultValue("1") @QueryParam("page") Integer page,
+            @DefaultValue("6") @QueryParam("pageSize") Integer pageSize,
+            @DefaultValue("") @QueryParam("material") String material,
             @QueryParam("server") Server server,
-            @QueryParam("tradeType") TradeType tradeType,
-            @QueryParam("hideUnavailable") Boolean hideUnavailable,
-            @QueryParam("sortBy") SortBy sortBy,
-            @QueryParam("distinct") Boolean distinct)
-    {
+            @DefaultValue("buy") @QueryParam("tradeType") TradeType tradeType,
+            @DefaultValue("false") @QueryParam("hideUnavailable") Boolean hideUnavailable,
+            @DefaultValue("best-price") @QueryParam("sortBy") SortBy sortBy,
+            @DefaultValue("false") @QueryParam("distinct") Boolean distinct) {
         LOGGER.info("GET /chest-shops");
-        if (page == null) page = 1;
-        if (page < 1) throw new BadRequestException(ExceptionMessage.INVALID_PAGE);
-        if (pageSize == null) pageSize = 6;
-        if (pageSize > 100 || pageSize < 1) throw new BadRequestException(ExceptionMessage.INVALID_PAGE_SIZE);
-        if (tradeType == null) tradeType = TradeType.BUY;
-        if (sortBy == null) sortBy = SortBy.BEST_PRICE;
-        if (hideUnavailable == null) hideUnavailable = Boolean.FALSE;
-        if (distinct == null) distinct = Boolean.FALSE;
-        if (material == null) material = "";
 
-        Sort sort;
+        if (page < 1) throw new SDBIllegalArgumentException(ExceptionMessage.INVALID_PAGE);
+        if (pageSize > 100 || pageSize < 1) throw new SDBIllegalArgumentException(ExceptionMessage.INVALID_PAGE_SIZE);
 
-        if (sortBy == SortBy.BEST_PRICE) {
-            if (tradeType == TradeType.BUY) {
-                sort = Sort.by("buyPriceEach").ascending();
-            } else {
-                sort = Sort.by("sellPriceEach").descending();
-            }
-        } else if (sortBy == SortBy.QUANTITY_AVAILABLE) {
-            sort = Sort.by("quantityAvailable").descending();
-        } else if (sortBy == SortBy.QUANTITY) {
-            sort = Sort.by("quantity").descending();
-        } else {
-            sort = Sort.by("material").descending();
-        }
-
-        PanacheQuery<ChestShop> chestShops = ChestShop.find(
-                 "(?1 = '' OR material = ?1) AND " +
-                        "(?2 IS FALSE OR is_buy_sign = true) AND " +
-                        "(?2 IS TRUE OR is_sell_sign = true) AND " +
-                        "(?3 = '' OR server = ?3) AND " +
-                        "(?4 IS FALSE OR is_full = false) AND " +
-                        "(?5 IS FALSE OR quantity_available > 0) AND " +
-                        "isHidden = false",
-                sort,
-                material,
-                tradeType == TradeType.BUY,
-                Server.toString(server),
-                hideUnavailable && tradeType == TradeType.SELL,
-                hideUnavailable && tradeType == TradeType.BUY
-        );
+        Sort sort = this.mapSortBy(sortBy, tradeType);
+        PanacheQuery<ChestShop> chestShops = ChestShop.find(material, tradeType, server, hideUnavailable, sort);
 
         if (!distinct) {
             long totalResults = chestShops.count();
-            List<ChestShopDto> results = chestShops.page(page - 1, pageSize).stream().map(ChestShopMapper.INSTANCE::toChestShopDto).collect(Collectors.toList());
+            List<ChestShopDto> results = chestShops.page(page - 1, pageSize)
+                    .stream().map(ChestShopMapper.INSTANCE::toChestShopDto).collect(Collectors.toList());
+
             return new PaginatedResponse<>(page, Pagination.getNumPages(pageSize, totalResults), totalResults, shuffle(results, tradeType, sortBy));
         }
 
-        LinkedHashMap<ChestShop, ChestShop> distinctValues = new LinkedHashMap<>();
-        TradeType finalTradeType = tradeType;
-        chestShops.stream().forEach(cs -> {
-            ChestShop cs2 = distinctValues.get(cs);
-            if (
-                    cs2 == null ||
-                            finalTradeType == TradeType.BUY && cs.quantityAvailable > cs2.quantityAvailable ||
-                            finalTradeType == TradeType.SELL && cs.quantityAvailable < cs2.quantityAvailable
-            ) {
-                distinctValues.put(cs, cs);
-            }
-        });
+        Set<ChestShop> distinctChestShops = this.findDistinctValues(chestShops, tradeType);
+        long totalResults = distinctChestShops.size();
+        List<ChestShopDto> results = Pagination.getPage(new LinkedList<>(distinctChestShops), page, pageSize)
+                .stream().map(ChestShopMapper.INSTANCE::toChestShopDto).collect(Collectors.toList());
 
-        long totalResults = distinctValues.keySet().size();
-        List<ChestShopDto> results = Pagination.getPage(new LinkedList<>(distinctValues.keySet()), page, pageSize).stream().map(ChestShopMapper.INSTANCE::toChestShopDto).collect(Collectors.toList());
         return new PaginatedResponse<>(page, Pagination.getNumPages(pageSize, totalResults), totalResults, shuffle(results, tradeType, sortBy));
     }
 
     @GET
     @Path("material-names")
-    public List<PanacheEntityBase> getChestShopSignMaterialNames(@QueryParam("server") Server server, @QueryParam("tradeType") TradeType tradeType) {
+    public List<PanacheEntityBase> getChestShopSignMaterialNames(
+            @QueryParam("server") Server server,
+            @DefaultValue("buy") @QueryParam("tradeType") TradeType tradeType) {
         LOGGER.info("GET /chest-shops/material-names");
-        if (tradeType == null) tradeType = TradeType.BUY;
-        return ChestShop.find("SELECT DISTINCT material FROM ChestShop " +
-                        "WHERE (?1 = '' OR server = ?1) AND " +
-                        "(?2 IS FALSE OR is_buy_sign = true) AND " +
-                        "(?2 IS TRUE OR is_sell_sign = true) " +
-                        "ORDER BY material",
-                Server.toString(server),
-                tradeType == TradeType.BUY).list();
+
+        return ChestShop.findDistinctMaterialNames(tradeType, server);
     }
 
     @POST
@@ -175,5 +130,30 @@ public class ChestShopController {
                 return Double.compare(b.getSellPriceEach(), a.getSellPriceEach());
             }
         }).collect(Collectors.toList());
+    }
+
+    private Sort mapSortBy(SortBy sortBy, TradeType tradeType) {
+        if (sortBy == SortBy.BEST_PRICE && tradeType == TradeType.BUY) return Sort.by("buyPriceEach").ascending();
+        if (sortBy == SortBy.BEST_PRICE && tradeType == TradeType.SELL) return Sort.by("sellPriceEach").descending();
+        if (sortBy == SortBy.QUANTITY_AVAILABLE) return Sort.by("quantityAvailable").descending();
+        if (sortBy == SortBy.QUANTITY) return Sort.by("quantity").descending();
+        return Sort.by("material").ascending();
+    }
+
+    private Set<ChestShop> findDistinctValues(PanacheQuery<ChestShop> chestShops, TradeType tradeType) {
+        LinkedHashMap<ChestShop, ChestShop> distinctValues = new LinkedHashMap<>();
+
+        chestShops.stream().forEach(cs -> {
+            ChestShop cs2 = distinctValues.get(cs);
+            if (
+                    cs2 == null ||
+                            tradeType == TradeType.BUY && cs.quantityAvailable > cs2.quantityAvailable ||
+                            tradeType == TradeType.SELL && cs.quantityAvailable < cs2.quantityAvailable
+            ) {
+                distinctValues.put(cs, cs);
+            }
+        });
+
+        return distinctValues.keySet();
     }
 }
