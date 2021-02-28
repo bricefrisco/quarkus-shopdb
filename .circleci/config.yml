@@ -108,6 +108,3 @@ jobs:
       - run:
           name: Push docker image
           command: docker push bricefrisco/quarkus-eccshopdb-backend-test:$CIRCLE_BUILD_NUM
-      - run:
-          name: Notify server to update Docker image
-          command: ssh -o StrictHostKeyChecking=no $TEST_HOST "/usr/local/sbin/upgrade-docker-image.sh" bricefrisco/quarkus-eccshopdb-backend-test $CIRCLE_BUILD_NUM $TEST_DOCKER_ENV_ARGS
