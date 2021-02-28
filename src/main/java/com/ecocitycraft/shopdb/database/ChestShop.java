@@ -82,7 +82,7 @@ public class ChestShop extends PanacheEntityBase {
     public static List<PanacheEntityBase> findDistinctMaterialNames(TradeType tradeType, Server server) {
         return ChestShop.find("SELECT DISTINCT material FROM ChestShop " +
                         "WHERE isHidden = false AND " +
-                        "WHERE (?1 = '' OR server = ?1) AND " +
+                        "(?1 = '' OR server = ?1) AND " +
                         "(?2 IS FALSE OR is_buy_sign = true) AND " +
                         "(?2 IS TRUE OR is_sell_sign = true) " +
                         "ORDER BY material",
