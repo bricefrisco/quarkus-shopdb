@@ -8,6 +8,7 @@ import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import javax.persistence.*;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Locale;
 
 @Entity
 @Table(name = "region")
@@ -52,7 +53,8 @@ public class Region extends PanacheEntityBase {
     public Timestamp lastUpdated;
 
     public static Region find(Server server, String name) {
-        return Region.find("server = ?1 AND name = ?2", server, name).firstResult();
+        if (server == null || name == null) return null;
+        return Region.find("server = ?1 AND name = ?2", server, name.toLowerCase(Locale.ROOT)).firstResult();
     }
 
 

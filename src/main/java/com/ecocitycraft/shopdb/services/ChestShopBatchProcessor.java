@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class ChestShopBatchProcessor {
@@ -191,7 +192,26 @@ public class ChestShopBatchProcessor {
         if (sign.town == null) {
             List<Region> regions = Region.findOverlapping(event.getX(), event.getY(), event.getZ(), sign.server);
             if (regions != null && regions.size() > 0) {
-                sign.town = regions.get(0); // TODO: Determine correct region or add many to many
+                LOGGER.warn("Conflicting regions for event: " + event.toString());
+
+                Region selectedRegion = null;
+                StringBuilder sb = new StringBuilder();
+                for (Region region : regions) {
+                    sb.append(region.name).append(",");
+                    if (region.active) {
+                        selectedRegion = region;
+                    }
+                }
+
+                LOGGER.warn("Regions are (server: " + sign.server + "): " + sb.toString());
+
+                if (selectedRegion != null) {
+                    LOGGER.warn("Selected region is (server: " + sign.server + "): " + selectedRegion.name);
+                    sign.town = selectedRegion;
+                } else {
+                    LOGGER.warn("Selected region is (server: " + sign.server + "): " + regions.get(0).name);
+                    sign.town = regions.get(0); // TODO: Determine correct region or add many to many
+                }
             }
         }
 

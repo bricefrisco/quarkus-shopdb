@@ -1,12 +1,12 @@
 package com.ecocitycraft.shopdb.controllers;
 
+import com.ecocitycraft.shopdb.services.BotShopProcessor;
+import com.ecocitycraft.shopdb.models.bot.BotShopRequest;
 import com.ecocitycraft.shopdb.database.ChestShop;
 import com.ecocitycraft.shopdb.models.PaginatedResponse;
 import com.ecocitycraft.shopdb.models.chestshops.*;
 import com.ecocitycraft.shopdb.services.ChestShopBatchProcessor;
-import com.ecocitycraft.shopdb.utils.APIKeyValidator;
-import com.ecocitycraft.shopdb.utils.ExceptionMessage;
-import com.ecocitycraft.shopdb.utils.Pagination;
+import com.ecocitycraft.shopdb.utils.*;
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.panache.common.Sort;
@@ -32,6 +32,9 @@ public class ChestShopController {
 
     @Inject
     APIKeyValidator apiKeyValidator;
+
+    @Inject
+    BotShopProcessor botShopProcessor;
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -65,7 +68,6 @@ public class ChestShopController {
                 sort = Sort.by("sellPriceEach").descending();
             }
         } else if (sortBy == SortBy.QUANTITY_AVAILABLE) {
-            LOGGER.info("Sorting by quantity available");
             sort = Sort.by("quantityAvailable").descending();
         } else if (sortBy == SortBy.QUANTITY) {
             sort = Sort.by("quantity").descending();
@@ -125,6 +127,14 @@ public class ChestShopController {
                         "ORDER BY material",
                 Server.toString(server),
                 tradeType == TradeType.BUY).list();
+    }
+
+    @POST
+    @Path("bot")
+    @Transactional
+    public String createChestShopSigns(BotShopRequest botShopRequest, @HeaderParam("Authorization") String authHeader) throws Exception {
+        apiKeyValidator.validateAPIKey(authHeader);
+        return botShopProcessor.processShopSigns(botShopRequest);
     }
 
     @POST
