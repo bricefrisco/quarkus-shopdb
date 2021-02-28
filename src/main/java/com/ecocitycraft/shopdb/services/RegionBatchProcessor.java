@@ -1,6 +1,5 @@
 package com.ecocitycraft.shopdb.services;
 
-import com.ecocitycraft.shopdb.database.ChestShop;
 import com.ecocitycraft.shopdb.database.Player;
 import com.ecocitycraft.shopdb.database.Region;
 import com.ecocitycraft.shopdb.models.chestshops.Location;
@@ -41,9 +40,11 @@ public class RegionBatchProcessor {
 
         LOGGER.info("Mapping " + requests.size() + " region requests...");
 
-        List<Region> inserts = new ArrayList<>();
-        List<Region> updates = new ArrayList<>();
+        int numInserts = 0;
+        int numUpdates = 0;
 
+
+        List<Region> upserts = new ArrayList<>();
         for (RegionRequest request : requests) {
             Server server = servers.get(request.getServer());
             Bounds bounds = sort(request.getiBounds(), request.getoBounds());
@@ -55,9 +56,9 @@ public class RegionBatchProcessor {
                 region.active = Boolean.FALSE;
                 region.name = request.getName().toLowerCase(Locale.ROOT);
                 region.server = server;
-                inserts.add(region);
+                numInserts++;
             } else {
-                updates.add(region);
+                numUpdates++;
             }
 
             region.name = request.getName().toLowerCase(Locale.ROOT);
@@ -73,10 +74,12 @@ public class RegionBatchProcessor {
 
             region.lastUpdated = new Timestamp(System.currentTimeMillis());
 
-            Region.persist(region);
+            upserts.add(region);
         }
 
-        String response = "Successfully updated " + updates.size() + " regions, and inserted " + inserts.size() + " regions.";
+        Region.persist(upserts);
+
+        String response = "Successfully updated " + numUpdates + " regions, and inserted " + numInserts + " regions.";
         LOGGER.info(response);
         return response;
     }

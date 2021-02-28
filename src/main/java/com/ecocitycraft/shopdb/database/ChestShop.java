@@ -81,6 +81,7 @@ public class ChestShop extends PanacheEntityBase {
 
     public static List<PanacheEntityBase> findDistinctMaterialNames(TradeType tradeType, Server server) {
         return ChestShop.find("SELECT DISTINCT material FROM ChestShop " +
+                        "WHERE isHidden = false AND " +
                         "WHERE (?1 = '' OR server = ?1) AND " +
                         "(?2 IS FALSE OR is_buy_sign = true) AND " +
                         "(?2 IS TRUE OR is_sell_sign = true) " +
@@ -90,9 +91,10 @@ public class ChestShop extends PanacheEntityBase {
     }
 
     public static PanacheQuery<ChestShop> findInRegion(Region r, TradeType tradeType) {
+        System.out.println("Region: " + r.getName());
         return ChestShop.find("town = ?1 AND isHidden = false AND " +
                         "(?2 IS FALSE or is_buy_sign = true) AND " +
-                        "?2 IS TRUE or is_sell_sign = true",
+                        "(?2 IS TRUE or is_sell_sign = true)",
                 Sort.by("material").ascending(),
                 r, tradeType == TradeType.BUY);
     }
