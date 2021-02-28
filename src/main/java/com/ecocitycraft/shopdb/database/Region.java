@@ -2,7 +2,6 @@ package com.ecocitycraft.shopdb.database;
 
 import com.ecocitycraft.shopdb.models.chestshops.Location;
 import com.ecocitycraft.shopdb.models.chestshops.Server;
-import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 
 import javax.persistence.*;
@@ -40,10 +39,10 @@ public class Region extends PanacheEntityBase {
     })
     public Location oBounds;
 
-    @OneToMany(mappedBy = "town", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "town", fetch = FetchType.LAZY)
     public List<ChestShop> chestShops;
 
-    @ManyToMany(cascade = CascadeType.ALL)
+    @ManyToMany
     @JoinTable(name = "region_mayors", joinColumns = @JoinColumn(name="towns_id"), inverseJoinColumns = @JoinColumn(name="mayors_id"))
     public List<Player> mayors;
 
@@ -98,5 +97,13 @@ public class Region extends PanacheEntityBase {
                         "i_z >= ?4 AND o_z <= ?5",
                 server, ix, ox, iz, oz
         ).list();
+    }
+
+    public String getName() {
+        return name.toLowerCase(Locale.ROOT);
+    }
+
+    public void setName(String name) {
+        this.name = name.toLowerCase(Locale.ROOT);
     }
 }

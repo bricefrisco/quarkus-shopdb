@@ -24,10 +24,10 @@ public class Player extends PanacheEntityBase {
     @Column(name="last_updated")
     public Timestamp lastUpdated;
 
-    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "owner")
     public List<ChestShop> chestShops;
 
-    @ManyToMany(cascade = CascadeType.ALL)
+    @ManyToMany
     @JoinTable(name = "region_mayors", joinColumns = @JoinColumn(name="mayors_id"), inverseJoinColumns = @JoinColumn(name="towns_id"))
     public List<Region> towns;
 
@@ -55,5 +55,13 @@ public class Player extends PanacheEntityBase {
         }
 
         return players;
+    }
+
+    public String getName() {
+        return name.toLowerCase(Locale.ROOT);
+    }
+
+    public void setName(String name) {
+        this.name = name.toLowerCase(Locale.ROOT);
     }
 }

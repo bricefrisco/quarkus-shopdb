@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class ChestShopBatchProcessor {
@@ -29,7 +28,7 @@ public class ChestShopBatchProcessor {
                 shopIdsToDelete.add(shopEvent.getId());
             } else {
                 upserts.add(shopEvent);
-                playerNames.add(shopEvent.getOwner());
+                playerNames.add(shopEvent.getOwner().toLowerCase(Locale.ROOT));
             }
         }
 
