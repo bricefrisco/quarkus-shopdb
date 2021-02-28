@@ -120,4 +120,23 @@ public class ShopEvent {
     public void setFull(Boolean full) {
         this.full = full;
     }
+
+    @Override
+    public String toString() {
+        return "ShopEvent{" +
+                "id='" + id + '\'' +
+                ", eventType=" + eventType +
+                ", world='" + world + '\'' +
+                ", x=" + x +
+                ", y=" + y +
+                ", z=" + z +
+                ", owner='" + owner + '\'' +
+                ", quantity=" + quantity +
+                ", count=" + count +
+                ", buyPrice=" + buyPrice +
+                ", sellPrice=" + sellPrice +
+                ", item='" + item + '\'' +
+                ", full=" + full +
+                '}';
+    }
 }

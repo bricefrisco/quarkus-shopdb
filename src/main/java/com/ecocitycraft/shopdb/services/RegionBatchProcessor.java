@@ -52,6 +52,7 @@ public class RegionBatchProcessor {
 
             if (region == null) {
                 if (Region.hasConflictingRegion(bounds.getLowerBounds(), bounds.getUpperBounds(), server)) {
+                    LOGGER.info("Conflicting regions!");
                     invalidRegions.add(String.format(INVALID_REGION_FORMAT, request.getName(), Server.toString(server)));
                     continue;
                 }
