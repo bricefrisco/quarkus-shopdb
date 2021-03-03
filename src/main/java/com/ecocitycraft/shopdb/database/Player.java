@@ -44,6 +44,13 @@ public class Player extends PanacheEntityBase {
                     "GROUP BY p.id ORDER BY COUNT(c.id) DESC", name);
         }
 
+        if (sortBy == SortBy.NUM_REGIONS) {
+            System.out.println("sorting by # regions");
+            return Player.find("SELECT p FROM Player p LEFT JOIN p.towns t " +
+                    "WHERE (?1 = '' OR p.name = ?1) " +
+                    "GROUP BY p.id ORDER BY COUNT(t.id) DESC", name);
+        }
+
         return Player.find("(?1 = '' OR name = ?1)",
                 Sort.by("name"),
                 name

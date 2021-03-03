@@ -46,7 +46,7 @@ public class PlayerController {
         if (pageSize < 1 || pageSize > 100) throw new SDBIllegalArgumentException(ExceptionMessage.INVALID_PAGE_SIZE);
 
         PanacheQuery<Player> players = Player.find(name, sortBy);
-        long totalResults = players.stream().count();
+        long totalResults = Player.find(name, SortBy.NAME).count();
         List<PlayerDto> results = players.page(page - 1, pageSize).stream().map(PlayerMapper.INSTANCE::toPlayerDto).collect(Collectors.toList());
         return new PaginatedResponse<>(page, Pagination.getNumPages(pageSize, totalResults), totalResults, results);
     }
