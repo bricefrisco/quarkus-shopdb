@@ -2,6 +2,7 @@ package com.ecocitycraft.shopdb.database;
 
 import com.ecocitycraft.shopdb.models.chestshops.Location;
 import com.ecocitycraft.shopdb.models.chestshops.Server;
+import com.ecocitycraft.shopdb.models.chestshops.SortBy;
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.panache.common.Sort;
@@ -53,7 +54,25 @@ public class Region extends PanacheEntityBase {
     @Column(name = "last_updated")
     public Timestamp lastUpdated;
 
-    public static PanacheQuery<Region> find(Server server, Boolean active, String name) {
+    public static PanacheQuery<Region> find(Server server, Boolean active, String name, SortBy sortBy) {
+        if (sortBy == SortBy.NUM_PLAYERS) {
+            return Region.find("SELECT r FROM Region r LEFT JOIN r.mayors m " +
+                    "WHERE (?1 = '' OR r.server = ?1) AND " +
+                    "(?2 = false OR r.active = true) AND " +
+                    "(?3 = '' OR r.name = ?3) " +
+                    "GROUP BY r.id ORDER BY COUNT(m.id) DESC",
+                    Server.toString(server), active, name);
+        }
+
+        if (sortBy == SortBy.NUM_CHEST_SHOPS) {
+            return Region.find("SELECT r FROM Region r LEFT JOIN r.chestShops c " +
+                    "WHERE (?1 = '' OR r.server = ?1) AND " +
+                    "(?2 = false OR r.active = true) AND " +
+                    "(?3 = '' OR r.name = ?3) " +
+                    "GROUP BY r.id ORDER BY COUNT(c.id) DESC",
+                    Server.toString(server), active, name);
+        }
+
         return Region.find(
                 "(?1 = '' OR server = ?1) AND " +
                         "(?2 = false OR active = true) AND " +
@@ -89,5 +108,15 @@ public class Region extends PanacheEntityBase {
 
     public void setName(String name) {
         this.name = name.toLowerCase(Locale.ROOT);
+    }
+
+    public Location getiBounds() {
+        if (iBounds == null) iBounds = new Location();
+        return iBounds;
+    }
+
+    public Location getoBounds() {
+        if (oBounds == null) oBounds = new Location();
+        return oBounds;
     }
 }

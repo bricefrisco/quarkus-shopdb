@@ -1,5 +1,6 @@
 package com.ecocitycraft.shopdb.database;
 
+import com.ecocitycraft.shopdb.models.chestshops.SortBy;
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.panache.common.Sort;
@@ -34,8 +35,22 @@ public class Player extends PanacheEntityBase {
 
     public Boolean active;
 
-    public static PanacheQuery<Player> find(String name) {
+    public static PanacheQuery<Player> find(String name, SortBy sortBy) {
         name = name.toLowerCase(Locale.ROOT);
+
+        if (sortBy == SortBy.NUM_CHEST_SHOPS) {
+            return Player.find("SELECT p FROM Player p LEFT JOIN p.chestShops c " +
+                    "WHERE (?1 = '' OR name = ?1) " +
+                    "GROUP BY p.id ORDER BY COUNT(c.id) DESC", name);
+        }
+
+        if (sortBy == SortBy.NUM_REGIONS) {
+            System.out.println("sorting by # regions");
+            return Player.find("SELECT p FROM Player p LEFT JOIN p.towns t " +
+                    "WHERE (?1 = '' OR p.name = ?1) " +
+                    "GROUP BY p.id ORDER BY COUNT(t.id) DESC", name);
+        }
+
         return Player.find("(?1 = '' OR name = ?1)",
                 Sort.by("name"),
                 name

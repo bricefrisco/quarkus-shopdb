@@ -6,10 +6,7 @@ import com.ecocitycraft.shopdb.database.Region;
 import com.ecocitycraft.shopdb.exceptions.SDBIllegalArgumentException;
 import com.ecocitycraft.shopdb.exceptions.SDBNotFoundException;
 import com.ecocitycraft.shopdb.models.PaginatedResponse;
-import com.ecocitycraft.shopdb.models.chestshops.ChestShopDto;
-import com.ecocitycraft.shopdb.models.chestshops.ChestShopMapper;
-import com.ecocitycraft.shopdb.models.chestshops.Server;
-import com.ecocitycraft.shopdb.models.chestshops.TradeType;
+import com.ecocitycraft.shopdb.models.chestshops.*;
 import com.ecocitycraft.shopdb.models.players.PlayerDto;
 import com.ecocitycraft.shopdb.models.players.PlayerMapper;
 import com.ecocitycraft.shopdb.models.regions.RegionDto;
@@ -54,14 +51,15 @@ public class RegionController {
             @DefaultValue("6") @QueryParam("pageSize") Integer pageSize,
             @QueryParam("server") Server server,
             @DefaultValue("false") @QueryParam("active") Boolean active,
-            @DefaultValue("") @QueryParam("name") String name
+            @DefaultValue("") @QueryParam("name") String name,
+            @DefaultValue("name") @QueryParam("sortBy") SortBy sortBy
     ) {
         LOGGER.info("GET /regions");
         if (page < 1) throw new SDBIllegalArgumentException(ExceptionMessage.INVALID_PAGE);
         if (pageSize < 1 || pageSize > 100) throw new SDBIllegalArgumentException(ExceptionMessage.INVALID_PAGE_SIZE);
 
-        PanacheQuery<Region> regions = Region.find(server, active, name);
-        long totalResults = regions.count();
+        PanacheQuery<Region> regions = Region.find(server, active, name, sortBy);
+        long totalResults = Region.find(server, active, name, SortBy.NAME).count();
         List<RegionDto> results = regions.page(page - 1, pageSize).stream().map(RegionMapper.INSTANCE::toRegionDto).collect(Collectors.toList());
 
         return new PaginatedResponse<>(page, Pagination.getNumPages(pageSize, totalResults), totalResults, results);
