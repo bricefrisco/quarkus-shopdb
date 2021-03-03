@@ -163,10 +163,4 @@
       </properties>
     </profile>
   </profiles>
-  <repositories>
-    <repository>
-      <id>redhat-ga</id>
-      <url>https://maven.repository.redhat.com/ga</url>
-    </repository>
-  </repositories>
 </project>
