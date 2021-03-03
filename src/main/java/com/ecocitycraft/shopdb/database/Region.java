@@ -90,4 +90,14 @@ public class Region extends PanacheEntityBase {
     public void setName(String name) {
         this.name = name.toLowerCase(Locale.ROOT);
     }
+
+    public Location getiBounds() {
+        if (iBounds == null) iBounds = new Location();
+        return iBounds;
+    }
+
+    public Location getoBounds() {
+        if (oBounds == null) oBounds = new Location();
+        return oBounds;
+    }
 }

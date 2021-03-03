@@ -8,6 +8,7 @@ import com.ecocitycraft.shopdb.exceptions.SDBNotFoundException;
 import com.ecocitycraft.shopdb.models.PaginatedResponse;
 import com.ecocitycraft.shopdb.models.chestshops.ChestShopDto;
 import com.ecocitycraft.shopdb.models.chestshops.ChestShopMapper;
+import com.ecocitycraft.shopdb.models.chestshops.SortBy;
 import com.ecocitycraft.shopdb.models.chestshops.TradeType;
 import com.ecocitycraft.shopdb.models.players.PlayerDto;
 import com.ecocitycraft.shopdb.models.players.PlayerMapper;
@@ -20,6 +21,7 @@ import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
@@ -27,6 +29,7 @@ import java.util.stream.Collectors;
 
 @Path("/players")
 @Produces(MediaType.APPLICATION_JSON)
+@Consumes(MediaType.APPLICATION_JSON)
 public class PlayerController {
     Logger LOGGER = LoggerFactory.getLogger(PlayerController.class);
 
@@ -34,17 +37,17 @@ public class PlayerController {
     public PaginatedResponse<PlayerDto> getPlayers(
             @DefaultValue("1") @QueryParam("page") Integer page,
             @DefaultValue("6") @QueryParam("pageSize") Integer pageSize,
-            @DefaultValue("") @QueryParam("name") String name
+            @DefaultValue("") @QueryParam("name") String name,
+            @DefaultValue("name") @QueryParam("sortBy") SortBy sortBy
     ) {
         LOGGER.info("GET /players");
 
         if (page < 1) throw new SDBIllegalArgumentException(ExceptionMessage.INVALID_PAGE);
         if (pageSize < 1 || pageSize > 100) throw new SDBIllegalArgumentException(ExceptionMessage.INVALID_PAGE_SIZE);
 
-        PanacheQuery<Player> players = Player.find(name);
-        long totalResults = players.count();
+        PanacheQuery<Player> players = Player.find(name, sortBy);
+        long totalResults = players.stream().count();
         List<PlayerDto> results = players.page(page - 1, pageSize).stream().map(PlayerMapper.INSTANCE::toPlayerDto).collect(Collectors.toList());
-
         return new PaginatedResponse<>(page, Pagination.getNumPages(pageSize, totalResults), totalResults, results);
     }
 

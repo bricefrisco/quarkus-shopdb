@@ -1,6 +1,5 @@
 package com.ecocitycraft.shopdb.exceptions;
 
-import com.ecocitycraft.shopdb.models.ErrorResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;

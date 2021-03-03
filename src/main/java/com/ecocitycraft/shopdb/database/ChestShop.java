@@ -134,4 +134,9 @@ public class ChestShop extends PanacheEntityBase {
     public int hashCode() {
         return Objects.hash(material, owner, town, quantity);
     }
+
+    public Location getLocation() {
+        if (location == null) location = new Location();
+        return location;
+    }
 }
